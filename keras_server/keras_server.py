@@ -68,6 +68,10 @@ class KerasServer(Flask):
 server = KerasServer("test")
 
 
+x = tf.get_variable("x", initializer=5.0)
+sess = tf.Session()
+sess.run(tf.initialize_all_variables())
+
 model = keras.models.Sequential()
 model.add(Dense(5, activation="sigmoid", input_shape=(10,)))
 
@@ -82,7 +86,7 @@ model.add(Dense(5, activation="sigmoid", input_shape=(10,)))
 def predict_label(features):
     features = np.array(features)
     print(model.predict(features))
-    return "result"
+    return np.float64(sess.run(x))
 
 
 
