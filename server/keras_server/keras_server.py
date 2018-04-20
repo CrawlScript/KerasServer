@@ -1,5 +1,6 @@
 #coding=utf-8
 
+import flask
 from flask import Flask
 from flask import request
 from flask_cors import CORS
@@ -11,6 +12,12 @@ from keras import Input
 from keras.layers import Dense
 import inspect
 import numpy as np
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
 
 class KerasServer(Flask):
@@ -31,7 +38,7 @@ class KerasServer(Flask):
         response = {
             "data": result_data
         }
-        return json.dumps(response)
+        return json.dumps(response, cls=NumpyEncoder)
 
     def remote_api(self, rule, data_param_name="data", **kwargs):
         def make_view_func(func):
@@ -68,9 +75,9 @@ class KerasServer(Flask):
 server = KerasServer("test")
 
 
-x = tf.get_variable("x", initializer=5.0)
-sess = tf.Session()
-sess.run(tf.initialize_all_variables())
+# x = tf.get_variable("x", initializer=5.0)
+# sess = tf.Session()
+# sess.run(tf.initialize_all_variables())
 
 model = keras.models.Sequential()
 model.add(Dense(5, activation="sigmoid", input_shape=(10,)))
@@ -79,14 +86,13 @@ model.add(Dense(5, activation="sigmoid", input_shape=(10,)))
 
 
 
-
-
-
 @server.remote_api(rule="/")
 def predict_label(features):
     features = np.array(features)
-    print(model.predict(features))
-    return np.float64(sess.run(x))
+    return {
+        "predict": model.predict(features).astype(np.float64),
+        "msg": "good"
+    }
 
 
 
