@@ -90,7 +90,7 @@ model.add(Dense(5, activation="sigmoid", input_shape=(10,)))
 def predict_label(features):
     features = np.array(features)
     return {
-        "predict": model.predict(features).astype(np.float64),
+        "predict": model.predict(features),#.astype(np.float64),
         "msg": "good"
     }
 
